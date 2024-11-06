@@ -1,0 +1,6 @@
+<?php
+
+putenv('__DB_HOST__=xxxxxxxxxxxx');
+putenv("__DB_NAME__=xxxxxxxxxxxx");
+putenv("__DB_USER__=xxxxxxxxxxxx");
+putenv('__DB_PASSWORD__=xxxxxxxxxxxxxxxxxxxxxxx');

@@ -1,0 +1,32 @@
+# cf. https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+default:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker info
+
+variables:
+  HTML_JS_IMAGE: $CI_REGISTRY_IMAGE/html-js:latest
+  HTML_ONLY_IMAGE: $CI_REGISTRY_IMAGE/html-only:latest
+
+build:
+  only:
+    refs:
+      - branches
+    variables:
+      - $CI_COMMIT_REF_NAME == "main"
+
+  stage: build
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - echo "CI_REGISTRY_IMAGE=$CI_REGISTRY_IMAGE"
+    - echo "commit $CI_COMMIT_SHA" > version.txt
+    - echo "Date $CI_COMMIT_TIMESTAMP" >> version.txt
+    - echo "$CI_COMMIT_TITLE" >> version.txt
+    - cp ./version.txt ./html-only/
+    - cp ./version.txt ./html-js/
+    - docker build -f ./html-only/Dockerfile --pull --tag $HTML_ONLY_IMAGE ./html-only/
+    - docker build -f ./html-js/Dockerfile --pull --tag $HTML_JS_IMAGE ./html-js/
+    - docker push $HTML_ONLY_IMAGE
+    - docker push $HTML_JS_IMAGE
